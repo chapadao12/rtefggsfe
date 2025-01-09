@@ -60,7 +60,8 @@ local function startFlying(speed)
 
         flyConnection = game:GetService("RunService").Stepped:Connect(function()
             if flying then
-                local moveDirection = humanoid.MoveDirection
+                local camera = workspace.CurrentCamera
+                local moveDirection = camera.CFrame.LookVector
                 bodyVelocity.Velocity = moveDirection * speed * 10 -- Multiplicando por 10 para ajustar a escala
             else
                 bodyVelocity:Destroy()
@@ -147,10 +148,86 @@ Callback = function(Value)
     end
 end})
 
+-- Nova aba "tools/items"
+local Tab2 = Window:MakeTab("tools/items")
+
+local toolsSection = Tab2:Section({
+  Title = "Ferramentas",
+  Content = ""
+})
+
+toolsSection:Button({
+Title = "Pegar TPTOOLS",
+Content = "Clique para pegar TPTOOLS",
+Callback = function()
+    local tool = Instance.new("Tool")
+    tool.Name = "TPTOOLS"
+    tool.RequiresHandle = false
+
+    tool.Activated:Connect(function()
+        local mouse = game.Players.LocalPlayer:GetMouse()
+        local player = game.Players.LocalPlayer
+        local character = player.Character
+
+        mouse.Button1Down:Connect(function()
+            if character and character:FindFirstChild("HumanoidRootPart") then
+                character.HumanoidRootPart.CFrame = CFrame.new(mouse.Hit.p)
+            end
+        end)
+    end)
+
+    tool.Parent = game.Players.LocalPlayer.Backpack
+    print("TPTOOLS adicionado ao inventário")
+end})
+
+toolsSection:Button({
+Title = "Pegar FLYTOOLS",
+Content = "Clique para pegar FLYTOOLS",
+Callback = function()
+    local tool = Instance.new("Tool")
+    tool.Name = "FLYTOOLS"
+    tool.RequiresHandle = false
+
+    tool.Activated:Connect(function()
+        local player = game.Players.LocalPlayer
+        local character = player.Character
+        local humanoid = character:FindFirstChild("Humanoid")
+
+        if humanoid then
+            humanoid.PlatformStand = true
+            local bodyVelocity = Instance.new("BodyVelocity")
+            bodyVelocity.Velocity = Vector3.new(0, 0, 0)
+            bodyVelocity.MaxForce = Vector3.new(100000, 100000, 100000)
+            bodyVelocity.Parent = character.HumanoidRootPart
+
+            flyConnection = game:GetService("RunService").Stepped:Connect(function()
+                local camera = workspace.CurrentCamera
+                local moveDirection = camera.CFrame.LookVector
+                bodyVelocity.Velocity = moveDirection * 50
+            end)
+        end
+    end)
+
+    tool.Deactivated:Connect(function()
+        if flyConnection then
+            flyConnection:Disconnect()
+        end
+        local player = game.Players.LocalPlayer
+        local character = player.Character
+        local humanoid = character:FindFirstChild("Humanoid")
+        if humanoid then
+            humanoid.PlatformStand = false
+        end
+    end)
+
+    tool.Parent = game.Players.LocalPlayer.Backpack
+    print("FLYTOOLS adicionado ao inventário")
+end})
+
 Library:Notify({
   Title = "SIUU HUB:",        
   Content = "Notificação",    
-  Description = "SIUUU HUB AGRADEÇE", 
+  Description = "SIUUU HUB AGRADECE", 
   Color = Color3.fromRGB(255, 0, 0),   
   Time = 0.5,              
   Delay = 5                  
